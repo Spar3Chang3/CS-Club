@@ -1,0 +1,110 @@
+<script lang="js">
+    import Header from '$lib/components/layout/Header.svelte';
+    // import Footer from '$lib/components/layout/Footer.svelte';
+    import { onMount } from 'svelte';
+
+    let { children } = $props();
+
+    let isMobile = $state(false);
+    let prefersDarkMode = $state(false);
+
+    //Stolen from Claude? Perhaps. But I understand it and didn't want to write it all out
+    //creates a query, then an event listener to change when updated
+    //I may be able to just do this from $derived, but eh this works
+    function setupMediaListeners() {
+        const mobileQuery = window.matchMedia('(max-width: 768px)');
+        const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+        // Set initial values
+        isMobile = mobileQuery.matches;
+        prefersDarkMode = darkModeQuery.matches;
+
+        const updateMobile = (e) => isMobile = e.matches;
+        const updateDarkMode = (e) => prefersDarkMode = e.matches;
+
+        // Add listeners
+        mobileQuery.addEventListener('change', updateMobile);
+        darkModeQuery.addEventListener('change', updateDarkMode);
+
+        // Return cleanup function
+        return () => {
+            mobileQuery.removeEventListener('change', updateMobile);
+            darkModeQuery.removeEventListener('change', updateDarkMode);
+        };
+    }
+
+
+    onMount(() => {
+        const cleanup = setupMediaListeners();
+
+        return cleanup;
+    });
+</script>
+
+<style lang="css">
+
+    @font-face {
+        font-family: "Hacked";
+        src: url("/fonts/cringe.ttf") format("truetype");
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+    }
+
+    :root {
+        --background-standard: #F1F1F1;
+        --background-secondary: #2A2A2A;
+
+        --banner-standard: #72b8fe;
+        --banner-accent: #2c3398;
+
+        --text-standard: #000000;
+        --hyperlink: #c8b18b;
+        --line-height-standard: 1.5rem;
+        --font-standard: sans-serif;
+        --font-special: Hacked, sans-serif;
+
+        --banner-text-size: 2rem;
+
+
+        overflow-x: hidden;
+
+        @media (prefers-color-scheme: dark) {
+            --background-standard: #1B1B1B;
+            --background-secondary: #2A2A2A;
+
+            --banner-standard: #2c3398;
+            --banner-accent: #72b8fe;
+
+            --text-standard: #FFFFFF;
+        }
+
+        background-color: var(--background-secondary);
+    }
+
+    :global(html, body) {
+        margin: 0;
+    }
+
+    main {
+        min-height: 79.8vh;
+        max-height: fit-content;
+        background-color: var(--background-standard);
+        overflow-x: hidden;
+    }
+
+</style>
+
+<header>
+    <Header isMobile={isMobile} prefersDarkMode={prefersDarkMode}/>
+</header>
+<main class="adaptive">
+    {#if children}
+        {@render children({ isMobile })}
+    {:else}
+        <p>502</p>
+    {/if}
+</main>
+<!--<footer>-->
+<!--    <Footer prefersDarkMode={prefersDarkMode}/>-->
+<!--</footer>-->
